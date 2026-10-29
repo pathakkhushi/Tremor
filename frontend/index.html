@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Tremor — Detects the small signals of failed logins before a breach happens. Parse SSH and web server logs, flag malicious IPs, and visualize attack patterns." />
+  <title>Tremor — Early Warning Log Analyzer</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ─── Navbar ─────────────────────────────────────────────────────────────── -->
+<nav class="navbar" role="navigation" aria-label="Main navigation">
+  <div class="nav-brand">
+    <span class="nav-logo" aria-hidden="true">📡</span>
+    <span class="nav-title">Tremor</span>
+  </div>
+  <div class="nav-status" id="navStatus">
+    <span class="status-dot" id="statusDot" aria-live="polite"></span>
+    <span class="status-label" id="statusLabel">Connecting…</span>
+  </div>
+</nav>
+
+<!-- ─── Hero ───────────────────────────────────────────────────────────────── -->
+<header class="hero" role="banner">
+  <div class="hero-bg" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-overlay"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Intrusion Early-Warning System
+    </div>
+    <h1 class="hero-title">
+      Tremor<br />
+      <span class="gradient-text">Early Warning Log Analyzer</span>
+    </h1>
+    <p class="hero-subtitle">
+      Detecting the small signals of failed logins — before the breach happens
+    </p>
+    <div class="hero-chips" role="list" aria-label="Features">
+      <span class="chip" role="listitem">🔍 Regex Parsing</span>
+      <span class="chip" role="listitem">📊 Pandas Analytics</span>
+      <span class="chip" role="listitem">📈 Matplotlib Charts</span>
+      <span class="chip" role="listitem">📡 Seismic Alerting</span>
+    </div>
+  </div>
+</header>
+
+<!-- ─── Main ───────────────────────────────────────────────────────────────── -->
+<main class="main" role="main">
+
+  <!-- Configuration -->
+  <section class="section" aria-labelledby="configHeading">
+    <div class="section-header">
+      <h2 class="section-title" id="configHeading">⚙️ Detection Configuration</h2>
+      <p class="section-sub">Tune the brute-force detection thresholds</p>
+    </div>
+    <div class="config-grid">
+
+      <div class="config-card">
+        <label class="config-label" for="logTypeSelect">Log Type</label>
+        <select class="config-select" id="logTypeSelect">
+          <option value="auto">🔄 Auto-detect</option>
+          <option value="ssh">🔐 SSH Auth Log</option>
+          <option value="apache">🌐 Apache / Nginx</option>
+        </select>
+      </div>
+
+      <div class="config-card">
+        <label class="config-label" for="thresholdInput">Threshold</label>
+        <div class="number-row">
+          <input class="number-input" id="thresholdInput" type="number" value="5" min="1" max="999" />
+          <span class="number-unit">failed logins</span>
+        </div>
+        <p class="config-hint">Flag IPs exceeding this count within the time window</p>
+      </div>
+
+      <div class="config-card">
+        <label class="config-label" for="windowInput">Time Window</label>
+        <div class="number-row">
+          <input class="number-input" id="windowInput" type="number" value="60" min="10" max="3600" />
+          <span class="number-unit">seconds</span>
+        </div>
+        <p class="config-hint">Sliding window duration for threshold evaluation</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Log Input -->
+  <section class="section" aria-labelledby="inputHeading">
+    <div class="section-header">
+      <h2 class="section-title" id="inputHeading">📋 Log Input</h2>
+      <p class="section-sub">Paste log content or load a built-in sample</p>
+    </div>
+
+    <div class="input-card">
+      <div class="input-toolbar">
+        <div class="toolbar-left">
+          <span class="toolbar-label">Log Content</span>
+          <span class="char-count" id="charCount">0 chars</span>
+        </div>
+        <button class="btn-ghost" id="clearBtn" aria-label="Clear input">✕ Clear</button>
+      </div>
+      <textarea
+        class="log-textarea"
+        id="logInput"
+        aria-label="Log file content"
+        spellcheck="false"
+        autocomplete="off"
+        placeholder="Paste your SSH auth.log or Apache access.log content here…&#10;&#10;SSH example:&#10;Oct 29 02:00:01 server sshd[1234]: Failed password for root from 185.234.218.45 port 51201 ssh2&#10;&#10;Apache example:&#10;185.234.218.45 - - [29/Oct/2026:10:00:01 +0000] &quot;POST /login HTTP/1.1&quot; 401 512"
+      ></textarea>
+    </div>
+
+    <div class="action-bar">
+      <div class="sample-buttons">
+        <button class="btn-secondary" id="loadSshBtn">🔐 Load SSH Sample</button>
+        <button class="btn-secondary" id="loadApacheBtn">🌐 Load Apache Sample</button>
+      </div>
+      <button class="btn-primary" id="analyzeBtn">
+        <span class="btn-icon" id="btnIcon">🔍</span>
+        <span id="btnText">Analyze Logs</span>
+        <span class="spinner hidden" id="btnSpinner" aria-hidden="true"></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Error Banner -->
+  <div class="error-banner hidden" id="errorBanner" role="alert">
+    <span class="error-icon">⚠️</span>
+    <span class="error-msg" id="errorMsg"></span>
+    <button class="error-close" id="errorClose" aria-label="Dismiss error">✕</button>
+  </div>
+
+  <!-- Results -->
+  <section class="section results hidden" id="resultsSection" aria-labelledby="resultsHeading">
+
+    <div class="section-header">
+      <h2 class="section-title" id="resultsHeading">📊 Analysis Results</h2>
+      <div class="results-meta" id="resultsMeta"></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-icon" aria-hidden="true">🎯</div>
+        <div class="stat-value" id="statTotal">0</div>
+        <div class="stat-label">Total Attempts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" aria-hidden="true">🌍</div>
+        <div class="stat-value" id="statUnique">0</div>
+        <div class="stat-label">Unique IPs</div>
+      </div>
+      <div class="stat-card stat-danger">
+        <div class="stat-icon" aria-hidden="true">🚨</div>
+        <div class="stat-value" id="statFlagged">0</div>
+        <div class="stat-label">Flagged IPs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" aria-hidden="true">📄</div>
+        <div class="stat-value" id="statParsed">0</div>
+        <div class="stat-label">Entries Parsed</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="section-header">
+      <h2 class="section-title">📈 Attack Visualizations</h2>
+    </div>
+    <div class="charts-grid" id="chartsGrid"></div>
+
+    <!-- Flagged IPs Table -->
+    <div class="section-header">
+      <h2 class="section-title">🚨 Flagged IP Addresses</h2>
+      <p class="section-sub" id="flaggedSub"></p>
+    </div>
+    <div class="table-wrap" id="tableWrap"></div>
+
+  </section>
+
+</main>
+
+<!-- Loading Overlay -->
+<div class="overlay hidden" id="overlay" role="status" aria-live="polite">
+  <div class="overlay-box">
+    <div class="overlay-spinner" aria-hidden="true"></div>
+    <p class="overlay-title">Tremor is scanning…</p>
+    <p class="overlay-sub" id="overlayStatus">Parsing entries</p>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox hidden" id="lightbox" role="dialog" aria-modal="true" aria-label="Chart viewer">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Close chart">✕</button>
+  <img class="lightbox-img" id="lightboxImg" alt="Chart" />
+</div>
+
+<footer class="footer">
+  <p>📡 <strong>Tremor</strong> — Early Warning Log Analyzer</p>
+  <p class="footer-sub">Detecting the small signals before the breach · Python · pandas · matplotlib · Flask</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
