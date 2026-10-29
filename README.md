@@ -1,4 +1,4 @@
-# 🛡️ BruteShield — Log Analyzer for Brute-Force Detection
+# 🛡️ Tremor - Early Warning Log Analyzer
 
 A full-stack security tool that parses **SSH auth logs** and **Apache/Nginx access logs**, 
 detects brute-force attacks using a sliding-window algorithm, and visualises results through 
